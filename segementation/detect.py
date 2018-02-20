@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import sys
 from PIL import Image
+import os
 
 if len(sys.argv)!=2:
     print('Usage: ./detect.py imageName')
@@ -44,9 +45,11 @@ for i in range(im.size[0]):
     if vbound[i]==1:
         for j in range(im.size[1]):
             ver.putpixel( (i,j) , (255,0,0) )
+#            gray.putpixel( (i,j) , (0) )
     if vbound[i]==2:
         for j in range(im.size[1]):
             ver.putpixel( (i,j) , (0,0,255) )
+#            gray.putpixel( (i,j) , (0) )
 
 #create lists to identify start and end of words
 start = []
@@ -58,7 +61,7 @@ for i in range(len(vbound)):
         start.append(i)
 del vbound
 if len(start)!=len(end):
-    print('incorrect border cases')
+    print('incorrect border cases (start,end)')
     sys.exit()
 
 #count number of words and print
@@ -106,7 +109,65 @@ for i in range(words+spaces):
 sentence[spPos] = ' '
 print(sentence)
 
+#find horizontal lines per word
+up=[]
+down=[]
+for i in range(len(start)):
+    flagUp = False
+    flagDown = False
+    for k in range(im.size[1]):
+        for j in range(start[i],end[i]+1):
+            if gray.getpixel((j,k)) <= 200:
+                flagUp = k
+            if flagUp!=False:
+                break
+        if flagUp!=False:
+            break
+    for k in reversed(range(im.size[1])):
+        for j in range(start[i],end[i]+1):
+            if gray.getpixel((j,k)) <= 200:
+                flagDown = k
+            if flagDown!=False:
+                break
+        if flagDown!=False:
+            break
+    up.append(flagUp)
+    down.append(flagDown)
+
+#error checking
+if len(up)!=len(down):
+    print('border error (up,dow)')
+    sys.exit()
+if len(up)!=len(start):
+    print('border error (up,start)')
+    sys.exit()
+
+#add horizontal and vertical bars to gray.jpg
+#horizontal
+for i in range(len(up)):
+    for k in range(start[i],end[i]):
+        gray.putpixel((k,up[i]),0)
+        gray.putpixel((k,down[i]),0)
+#vertical
+for i in range(len(start)):
+    for k in range(up[i],down[i]):
+        gray.putpixel((start[i],k),0)
+        gray.putpixel((end[i],k),0)
+
+#create folder crop and change dir to crop
+path = os.path.abspath('.')
+newPath = path + '/crop'
+if not os.path.exists(newPath):
+    os.makedirs(newPath)
+os.chdir(newPath)
+
+#add cropped images to crop
+for i in range(len(start)):
+    temp = gray.crop((start[i],up[i],end[i]+1,down[i]+1))
+    name = str(i) + '.jpg'
+    temp.save(name)
+
 #save for viewing and debugging
-hor.save('hor.jpg')
-ver.save('ver.jpg')
+os.chdir(path)
+im.save('test.jpg')
 gray.save('gray.jpg')
