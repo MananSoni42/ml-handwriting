@@ -7,11 +7,37 @@ if len(sys.argv)!=2:
     print('Usage: ./detect.py imageName')
     sys.exit()
 
+def convTo28x28(img):
+    width,height = img.size
+    final = Image.new('L',(28,28),255)
+    #if image is big convert to small enough image
+    factor = 1
+    if width>height:
+        if width > 28:
+            factor = 28/width
+        newWidth = int(round(factor*width,0))
+        newHeight = int(round(factor*height,0))
+    elif height>=width:
+        if height > 28:
+            factor = 28/height
+        newWidth = int(round(factor*width,0))
+        newHeight = int(round(factor*height,0))
+
+    smallIm = img.resize((newWidth,newHeight))
+
+    #find center wrt image
+    centerX = int(round(14 - (newWidth/2),0))
+    centerY = int(round(14 - (newHeight/2),0))
+
+    #paste cropped image (28x) or (x28) on white 28x28 image at it's center
+    final.paste(smallIm,(centerX,centerY))
+
+    return final
+
 #set up gray,hor,ver images
 im = Image.open(sys.argv[1])
 gray = im.convert("L")
 ver = Image.new('RGB',im.size,(255,255,255))
-hor = Image.new('RGB',im.size,(255,255,255))
 
 #create vertical boxes(filled,red) around words in ver.jpg
 vcheck = [0 for i in range(im.size[0])]
@@ -66,7 +92,7 @@ if len(start)!=len(end):
 
 #count number of words and print
 words = len(start)
-print('words:',words)
+#print('words:',words)
 
 #make array to store space distances
 sdist=[]
@@ -100,14 +126,19 @@ for i in range(len(sdist)):
         spaces+=1
 if m - avg < 0.4*avg:
     spaces = 0
-print('spaces:',spaces)
+#print('spaces:',spaces)
 
 #sentence formation
 sentence = []
 for i in range(words+spaces):
     sentence.append(None)
 sentence[spPos] = ' '
-print(sentence)
+for i in range(len(sentence)):
+    if sentence[i]==None:
+        print('N',end=' ')
+    if sentence[i]==' ':
+        print('S',end=' ')
+print('')
 
 #find horizontal lines per word
 up=[]
@@ -156,18 +187,35 @@ for i in range(len(start)):
 
 #create folder crop and change dir to crop
 path = os.path.abspath('.')
-newPath = path + '/crop'
+newPath = path + '/crop' + '_' + str(sys.argv[1])
 if not os.path.exists(newPath):
     os.makedirs(newPath)
 os.chdir(newPath)
 
+inp = []
+
 #add cropped images to crop
 for i in range(len(start)):
+    #add temporary images
     temp = gray.crop((start[i],up[i],end[i]+1,down[i]+1))
     name = str(i) + '.jpg'
     temp.save(name)
+    #add final images + create input array
+    new = convTo28x28(temp)
+    name = str(i) + '_f.jpg'
+    new.save(name)
+    #create and add input
+    inp.append([])
+    for j in range(28):
+        for k in range(28):
+            inp[i].append(new.getpixel((j,k)))
+
 
 #save for viewing and debugging
 os.chdir(path)
-im.save('test.jpg')
-gray.save('gray.jpg')
+gray.show()
+#input file
+for i in range(len(inp)):
+    for j in range(len(inp[i])):
+        print(inp[i][j],end=' ')
+    print('')
