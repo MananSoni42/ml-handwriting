@@ -1,0 +1,8 @@
+Line 1  - String of Ns and Ss
+	- W => letter / digit
+	- S => Spaces
+
+Line 2 - 784 space seperated numbers between 0 and 255 denoting pixel instensity (255->white 0->black) followed by a \n
+Line 3 - Same
+...
+Line len(Line1)+1 - Same
