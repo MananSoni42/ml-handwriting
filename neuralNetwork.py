@@ -182,7 +182,7 @@ for i in range(CYCLES):
     forwardPropogation(X,NEURONS,THETA,NUMLAYERS,A)
     backPropogation(THETA,Y,A,NUMLAYERS,NUMSAMPLES,NUMVARS,REGPARAM,DER,DELTA)
     updateTheta(THETA,ALPHA,DER,NUMLAYERS)
-
+    calcC(THETA,A[-1],Y)
 
 print("FINAL THETA : "+str(THETA))
 
@@ -190,12 +190,12 @@ A = forwardPropogation(tx,NEURONS,THETA,prevA=A)
 count =0
 for i in range(ty.shape[0]):
     for j in range(tx.shape[1]):
-        if(tx[i][j]>=0.5):
-            tx[i][j]=1
+        if(A[-1][i][j]>=0.5):
+            A[-1][i][j]=1
             if(ty[i][j]==1):
                 count+=1
         else:
-            tx[i][j]=0
+            A[-1][i][j]=0
             if(ty[i][j]==0):
                 count+=1
 
