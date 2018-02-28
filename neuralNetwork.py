@@ -1,11 +1,11 @@
-#! /bin/python3
+#!/usr/bin/python3
 
 import numpy,sys,os,openpyxl,pprint
 import numpy as np
 import copy
 
 if(len(sys.argv)<3):
-    print("Input a n and regParam")
+    print("Usage: ./neuralNetwork.py rate iterations lambda")
     sys.exit(1)
 
 CYCLES=int(sys.argv[2])
@@ -78,16 +78,10 @@ def calcC(theta,predictedOutput,Y,numSamples=None,numLayers=None,regParam=None):
     Hprime = numpy.log(1-predictedOutput)
     for i in range(numSamples):
         cost = cost - Y[i,:].dot(H[:,i])-(1-Y[i,:]).dot(Hprime[:,i])
-                                 
+
     for i in range(numLayers-1):
         cost = cost + regParam*(theta[i][:,1:].dot(theta[i][:,1:].T)).sum()
     return cost/numSamples
-
-#metaparameters
-inpNum = 4
-testNum = 1
-inpSize = 2
-outSize = 2
 
 def forwardPropogation(X,neurons,theta,numLayers=None,prevA=None):
     if(numLayers==None):
@@ -103,7 +97,7 @@ def forwardPropogation(X,neurons,theta,numLayers=None,prevA=None):
             prevA[i]=numpy.insert(prevA[i],0,1,axis=0)
             prevA[i+1]=calcG(theta[i],prevA[i])
     return prevA
-    
+
 def backPropogation(theta,Y,a,numLayers=None,numSamples=None,numVars=None,regParam=None,der=None,delta=None):
     if(regParam == None):
         regParam = 0
@@ -133,8 +127,8 @@ def backPropogation(theta,Y,a,numLayers=None,numSamples=None,numVars=None,regPar
             der[-i]=(delta[-i].dot(a[-i-1].T))
             der[-i][:,1:]=der[-i][:,1:]+theta[-i][:,1:]*regParam
             der[-i]=der[-i]/numSamples
-    
-        
+
+
     return der,delta
 
 def updateTheta(theta,alpha,der,numLayers=None):
@@ -147,7 +141,7 @@ def gradCheck(theta,a,Y,eps,neurons):
     print("Estimate")
     for i in range(len(theta)):
         derEst.append(numpy.zeros((theta[i].shape)))
-        for k in range(theta[i].shape[0]):   
+        for k in range(theta[i].shape[0]):
             for l in range(theta[i].shape[1]):
                 theta1 , theta2 = copy.deepcopy(theta), copy.deepcopy(theta)
                 theta1[i][k][l]=theta[i][k][l]+eps
@@ -156,7 +150,12 @@ def gradCheck(theta,a,Y,eps,neurons):
                 a2=forwardPropogation(X,neurons,theta2)
                 derEst[i][k][l]=(calcC(theta1,a1[-1],Y)-calcC(theta2,a2[-1],Y))/(2*eps)
     print(derEst)
-                                   
+#metaparameters
+inpNum = 4
+testNum = 1
+inpSize = 2
+outSize = 2
+
 X, Y,tx,ty = getData()
 NUMSAMPLES=Y.shape[0]
 NUMVARS =X.shape[1]
