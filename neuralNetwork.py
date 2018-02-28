@@ -5,12 +5,12 @@ import numpy as np
 import copy
 
 if(len(sys.argv)<3):
-    print("Input a and n")
+    print("Input a n and regParam")
     sys.exit(1)
 
-cycles=int(sys.argv[3])
-alpha = float(sys.argv[2])
-filename = os.path.join(".",str(sys.argv[1]))
+CYCLES=int(sys.argv[2])
+ALPHA = float(sys.argv[1])
+REGPARAM = float(sys.argv[3])
 
 def getData():
     #extract data from txt file
@@ -63,7 +63,6 @@ def calcGPrime(a):
     return a*(1-a)
 
 def calcDelta(a,prevdelta,thetaMatrix):
-    #return thetaMatrix.T.dot(prevdelta[1:,:])*(calcGPrime(a[:,:]))
     return  (thetaMatrix.T.dot(prevdelta)*(calcGPrime(a)))[1:]
 
 def calcC(theta,predictedOutput,Y,numSamples=None,numLayers=None,regParam=None):
@@ -78,7 +77,7 @@ def calcC(theta,predictedOutput,Y,numSamples=None,numLayers=None,regParam=None):
     H = numpy.log(predictedOutput)
     Hprime = numpy.log(1-predictedOutput)
     for i in range(numSamples):
-        cost = cost + Y[i,:].dot(H[:,i])+(1-Y[i,:]).dot(Hprime[:,i])
+        cost = cost - Y[i,:].dot(H[:,i])-(1-Y[i,:]).dot(Hprime[:,i])
                                  
     for i in range(numLayers-1):
         cost = cost + regParam*(theta[i][:,1:].dot(theta[i][:,1:].T)).sum()
@@ -88,18 +87,24 @@ def calcC(theta,predictedOutput,Y,numSamples=None,numLayers=None,regParam=None):
 inpNum = 4
 testNum = 1
 inpSize = 2
-outSize = 1
+outSize = 2
 
-def forwardPropogation(X,neurons,theta,numLayers=None):
+def forwardPropogation(X,neurons,theta,numLayers=None,prevA=None):
     if(numLayers==None):
         numLayers=len(neurons)
-    a = [X]
-    for i in range(numLayers-1):
-        a[i]=numpy.insert(a[i],0,1,axis=0)
-        a.append(calcG(theta[i],a[i]))                
-    return a
+    if(prevA==None):
+        prevA = [X]
+        for i in range(numLayers-1):
+            prevA[i]=numpy.insert(prevA[i],0,1,axis=0)
+            prevA.append(calcG(theta[i],prevA[i]))
+    else:
+        prevA[1]=calcG(theta[0],prevA[0])
+        for i in range(1,numLayers-1):
+            prevA[i]=numpy.insert(prevA[i],0,1,axis=0)
+            prevA[i+1]=calcG(theta[i],prevA[i])
+    return prevA
     
-def backPropogation(theta,Y,a,numLayers=None,numSamples=None,numVars=None,regParam=None):
+def backPropogation(theta,Y,a,numLayers=None,numSamples=None,numVars=None,regParam=None,der=None,delta=None):
     if(regParam == None):
         regParam = 0
     if(numLayers ==None):
@@ -108,27 +113,37 @@ def backPropogation(theta,Y,a,numLayers=None,numSamples=None,numVars=None,regPar
         numSamples = Y.shape[1]
     if(numVars==None):
         numVars= Y.shape[0]
-    delta = []
-    delta.append(Y-a[-1])
-    der = []
-    for i in range(1,numLayers):
-        delta.append(calcDelta(a[-i-1],delta[-1],theta[-i]))
-        der.append(delta[-2].dot(a[-i-1].T))
-        der[-1][:,1:]=der[-1][:,1:]+theta[-i][:,1:]*regParam
-        der[-1]=der[-1]/numSamples
-    der=list(reversed(der))
-    return der
+    if(der==None or delta==None):
+        del der
+        del delta
+        der=[]
+        delta = []
+        delta.append(a[-1]-Y)
+        for i in range(1,numLayers):
+            delta.append(calcDelta(a[-i-1],delta[-1],theta[-i]))
+            der.append(delta[-2].dot(a[-i-1].T))
+            der[-1][:,1:]=der[-1][:,1:]+theta[-i][:,1:]*regParam
+            der[-1]=der[-1]/numSamples
+        delta=list(reversed(delta))
+        der=list(reversed(der))
+    else:
+        delta[-1]=(a[-1]-Y)
+        for i in range(1,numLayers):
+            delta[-i-1]=calcDelta(a[-i-1],delta[-i],theta[-i])
+            der[-i]=(delta[-i].dot(a[-i-1].T))
+            der[-i][:,1:]=der[-i][:,1:]+theta[-i][:,1:]*regParam
+            der[-i]=der[-i]/numSamples
+    
+        
+    return der,delta
 
 def updateTheta(theta,alpha,der,numLayers=None):
     if numLayers == None:
         numLayers = len(theta)+1
     for i in range(numLayers-1):
-        theta[i]=theta[i]-alpha*der
+        theta[i]=theta[i]-alpha*der[i]
 
 def gradCheck(theta,a,Y,eps,neurons):
-    der=backPropogation(theta,Y,a)
-    derEst=[]
-    print(der)
     print("Estimate")
     for i in range(len(theta)):
         derEst.append(numpy.zeros((theta[i].shape)))
@@ -143,19 +158,45 @@ def gradCheck(theta,a,Y,eps,neurons):
     print(derEst)
                                    
 X, Y,tx,ty = getData()
-numSamples=Y.shape[0]
-numVars =X.shape[1]
-numOutputs = Y.shape[1]
+NUMSAMPLES=Y.shape[0]
+NUMVARS =X.shape[1]
+NUMOUTPUTS = Y.shape[1]
 X=X.T
 Y=Y.T
-NEURONS = [numVars,111,7,numOutputs]
+NEURONS = [NUMVARS,559,NUMOUTPUTS]
 NUMLAYERS = len(NEURONS)
 THETA = []
+
+print(tx)
 
 for i in range(NUMLAYERS-1):
     THETA.append(numpy.random.random((NEURONS[i+1],NEURONS[i]+1))*2-1)
 
-A = forwardPropogation(X,NEURONS,THETA)
-A = forwardPropogation(X,NEURONS,THETA)
-A = forwardPropogation(X,NEURONS,THETA)
-gradCheck(THETA,A,Y,0.001,NEURONS)
+A = forwardPropogation(X,NEURONS,THETA,NUMLAYERS)
+DER , DELTA = backPropogation(THETA,Y,A,NUMLAYERS,NUMSAMPLES,NUMVARS,REGPARAM)
+
+print("INITIAL THETA : "+str(THETA))
+
+for i in range(CYCLES):
+    print(str(i)+"/"+str(CYCLES)+"|"+str(i/CYCLES*100))
+    forwardPropogation(X,NEURONS,THETA,NUMLAYERS,A)
+    backPropogation(THETA,Y,A,NUMLAYERS,NUMSAMPLES,NUMVARS,REGPARAM,DER,DELTA)
+    updateTheta(THETA,ALPHA,DER,NUMLAYERS)
+
+
+print("FINAL THETA : "+str(THETA))
+
+A = forwardPropogation(tx,NEURONS,THETA,prevA=A)
+count =0
+for i in range(ty.shape[0]):
+    for j in range(tx.shape[1]):
+        if(tx[i][j]>=0.5):
+            tx[i][j]=1
+            if(ty[i][j]==1):
+                count+=1
+        else:
+            tx[i][j]=0
+            if(ty[i][j]==0):
+                count+=1
+
+print("Testing accuracy: ",100*count/ty.shape[0]/tx.shape[1])
