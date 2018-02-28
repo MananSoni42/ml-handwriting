@@ -38,7 +38,7 @@ def scanLine(i,out,num):
     vcheck = [0 for i in range(im.size[0])]
     for i in range(im.size[0]):
         for j in range(im.size[1]):
-            if gray.getpixel((i,j))<200:
+            if gray.getpixel((i,j))<225:
                 if vcheck[i]==0:
                     vcheck[i]=1
                     for k in range(im.size[1]):
@@ -157,7 +157,7 @@ def scanLine(i,out,num):
         flagDown = False
         for k in range(im.size[1]):
             for j in range(start[i],end[i]+1):
-                if gray.getpixel((j,k)) <= 200:
+                if gray.getpixel((j,k)) <= 225:
                     flagUp = k
                 if flagUp!=False:
                     break
@@ -165,7 +165,7 @@ def scanLine(i,out,num):
                 break
         for k in reversed(range(im.size[1])):
             for j in range(start[i],end[i]+1):
-                if gray.getpixel((j,k)) <= 200:
+                if gray.getpixel((j,k)) <= 225:
                     flagDown = k
                 if flagDown!=False:
                     break
@@ -237,7 +237,7 @@ hor = Image.new('RGB',im.size,(255,255,255))
 for i in range(g.size[1]):
     check = False
     for j in range(g.size[0]):
-        if g.getpixel((j,i)) < 200:
+        if g.getpixel((j,i)) < 225:
             check = True
             break
     if check == True:
