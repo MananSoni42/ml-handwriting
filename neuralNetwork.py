@@ -3,6 +3,7 @@
 import numpy,sys,os,openpyxl,pprint
 import numpy as np
 import copy
+import matplotlib.pyplot as plt
 
 if(len(sys.argv)<3):
     print("Usage: ./neuralNetwork.py rate iterations lambda")
@@ -74,6 +75,14 @@ def calcC(theta,predictedOutput,Y,numSamples=None,numLayers=None,regParam=None):
         numLayers = len(theta)+1
     cost = 0
     Y= Y.T
+
+    for i in range(predictedOutput.shape[0]):
+        for j in range(predictedOutput.shape[1]):
+            if predictedOutput[i][j]==1:
+                predictedOutput[i][j] = 1 - 10**(-5)
+            if predictedOutput[i][j]==0:
+                predictedOutput[i][j] = 10**(-5)
+
     H = numpy.log(predictedOutput)
     Hprime = numpy.log(1-predictedOutput)
     for i in range(numSamples):
@@ -151,10 +160,12 @@ def gradCheck(theta,a,Y,eps,neurons):
                 derEst[i][k][l]=(calcC(theta1,a1[-1],Y)-calcC(theta2,a2[-1],Y))/(2*eps)
     print(derEst)
 #metaparameters
-inpNum = 4
-testNum = 1
-inpSize = 2
-outSize = 2
+#inpNum =  425600*0.8
+#testNum = 425600*0.2
+inpNum =  1600
+testNum = 400
+inpSize = 784
+outSize = 36
 
 X, Y,tx,ty = getData()
 NUMSAMPLES=Y.shape[0]
@@ -162,11 +173,11 @@ NUMVARS =X.shape[1]
 NUMOUTPUTS = Y.shape[1]
 X=X.T
 Y=Y.T
+tx=tx.T
+ty=ty.T
 NEURONS = [NUMVARS,559,NUMOUTPUTS]
 NUMLAYERS = len(NEURONS)
 THETA = []
-
-print(tx)
 
 for i in range(NUMLAYERS-1):
     THETA.append(numpy.random.random((NEURONS[i+1],NEURONS[i]+1))*2-1)
@@ -174,28 +185,52 @@ for i in range(NUMLAYERS-1):
 A = forwardPropogation(X,NEURONS,THETA,NUMLAYERS)
 DER , DELTA = backPropogation(THETA,Y,A,NUMLAYERS,NUMSAMPLES,NUMVARS,REGPARAM)
 
-print("INITIAL THETA : "+str(THETA))
-
+cost=[]
 for i in range(CYCLES):
-    print(str(i)+"/"+str(CYCLES)+"|"+str(i/CYCLES*100))
+    print(str(i)+"/"+str(CYCLES))
     forwardPropogation(X,NEURONS,THETA,NUMLAYERS,A)
     backPropogation(THETA,Y,A,NUMLAYERS,NUMSAMPLES,NUMVARS,REGPARAM,DER,DELTA)
     updateTheta(THETA,ALPHA,DER,NUMLAYERS)
-    calcC(THETA,A[-1],Y)
+    cost.append(calcC(THETA,A[-1],Y))
 
-print("FINAL THETA : "+str(THETA))
-
+print(cost[0],'->',cost[-1])
+#testing
 A = forwardPropogation(tx,NEURONS,THETA,prevA=A)
+A[-1] = A[-1].T
+ty = ty.T
 count =0
 for i in range(ty.shape[0]):
-    for j in range(tx.shape[1]):
-        if(A[-1][i][j]>=0.5):
-            A[-1][i][j]=1
-            if(ty[i][j]==1):
-                count+=1
+    m = max(A[-1][i])
+    for j in range(ty.shape[1]):
+        if A[-1][i][j] == m:
+            A[-1][i][j] = 1
         else:
-            A[-1][i][j]=0
-            if(ty[i][j]==0):
-                count+=1
+            A[-1][i][j] = 0
+for i in range(ty.shape[0]):
+    if np.array_equal(ty[i],A[-1][i]):
+        count+=1
+print("Testing accuracy: ",100*count/ty.shape[0])
 
-print("Testing accuracy: ",100*count/ty.shape[0]/tx.shape[1])
+#training(accuracy)
+A = forwardPropogation(X,NEURONS,THETA,prevA=A)
+A[-1] = A[-1].T
+Y = Y.T
+
+count =0
+for i in range(Y.shape[0]):
+    m = max(A[-1][i])
+    for j in range(Y.shape[1]):
+        if A[-1][i][j] == m:
+            A[-1][i][j] = 1
+        else:
+
+            A[-1][i][j] = 0
+
+for i in range(Y.shape[0]):
+    if np.array_equal(Y[i],A[-1][i]):
+        count+=1
+
+print("Training accuracy: ",100*count/Y.shape[0])
+
+plt.plot(cost)
+plt.show()
