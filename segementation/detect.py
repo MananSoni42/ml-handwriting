@@ -4,12 +4,12 @@ from PIL import Image
 import os
 
 #open all neccessary files
-if len(sys.argv)!=3:
-    print('Usage: ./detect.py imageName inputFile')
+if len(sys.argv)!=4:
+    print('Usage: ./detect.py imageName OutImageAsTxt OutSentenceStucture')
     sys.exit()
 im = Image.open(sys.argv[1])
 out = open(sys.argv[2],'w')
-
+sentenceOut = open(sys.argv[3],'w')
 def convTo28x28(img):
     width,height = img.size
     final = Image.new('L',(28,28),255)
@@ -159,10 +159,10 @@ else:
 #write sentence structure to file
 for i in range(len(sentence)):
     if sentence[i]==None:
-        out.write('W ')
+        sentenceOut.write('W ')
     if sentence[i]==' ':
-        out.write('S ')
-out.write('\n')
+        sentenceOut.write('S ')
+sentenceOut.write('\n')
 
 #find horizontal lines per word
 up=[]
