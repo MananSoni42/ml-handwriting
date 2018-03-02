@@ -4,24 +4,26 @@ import numpy,sys,os,openpyxl,pprint
 import numpy as np
 import copy
 import matplotlib.pyplot as plt
+import shelve
 
-if(len(sys.argv)<3):
-    print("Usage: ./neuralNetwork.py rate iterations lambda")
+if len(sys.argv) != 4+1:
+    print("Usage: ./neuralNetwork.py File rate iterations lambda")
     sys.exit(1)
 
-CYCLES=int(sys.argv[2])
-ALPHA = float(sys.argv[1])
-REGPARAM = float(sys.argv[3])
+CYCLES=int(sys.argv[3])
+ALPHA = float(sys.argv[2])
+REGPARAM = float(sys.argv[4])
+inFile = open(sys.argv[1],'r')
 
-def getData():
+def getData(inFile):
     #extract data from txt file
     data =  []
     x = []
     y = []
     for i in range(inpNum):
-        data = input().split()
-        for j in range(outSize):
-            y.append(float(data[-j-1]))
+        data = inFile.readline().split()
+        for j in range(inpSize,len(data)):
+            y.append(float(data[j]))
         for j in range(inpSize):
             x.append(float(data[j]))
         del data
@@ -30,9 +32,9 @@ def getData():
     tx = []
     ty = []
     for i in range(testNum):
-        data = input().split()
-        for j in range(outSize):
-            ty.append(float(data[-j-1]))
+        data = inFile.readline().split()
+        for j in range(inpSize,len(data)):
+            ty.append(float(data[j]))
         for j in range(inpSize):
             tx.append(float(data[j]))
         del data
@@ -52,6 +54,7 @@ def getData():
     #scale test data
     tx = tx / np.max(tx)
     ty = ty / np.max(ty)
+
     return x,y,tx,ty
 
 def calcG(theta,x):
@@ -159,15 +162,18 @@ def gradCheck(theta,a,Y,eps,neurons):
                 a2=forwardPropogation(X,neurons,theta2)
                 derEst[i][k][l]=(calcC(theta1,a1[-1],Y)-calcC(theta2,a2[-1],Y))/(2*eps)
     print(derEst)
+
 #metaparameters
-#inpNum =  425600*0.8
-#testNum = 425600*0.2
-inpNum =  1600
-testNum = 400
+inpNum =  8000
+testNum = 2000
 inpSize = 784
 outSize = 36
 
-X, Y,tx,ty = getData()
+##-- MAIN --##
+print('Loading Data...')
+X, Y,tx,ty = getData(inFile)
+
+print('Done')
 NUMSAMPLES=Y.shape[0]
 NUMVARS =X.shape[1]
 NUMOUTPUTS = Y.shape[1]
@@ -179,13 +185,22 @@ NEURONS = [NUMVARS,559,NUMOUTPUTS]
 NUMLAYERS = len(NEURONS)
 THETA = []
 
-for i in range(NUMLAYERS-1):
-    THETA.append(numpy.random.random((NEURONS[i+1],NEURONS[i]+1))*2-1)
+#shelve weights
+db = shelve.open('weights')
+try:
+    THETA = db['theta']
+    print('\nfound weights from shelve file - weights')
+except KeyError:
+    print('\ncould not find weights, generating random weights')
+    for i in range(NUMLAYERS-1):
+        THETA.append(numpy.random.random((NEURONS[i+1],NEURONS[i]+1))*2-1)
+    db['theta'] = THETA
 
 A = forwardPropogation(X,NEURONS,THETA,NUMLAYERS)
 DER , DELTA = backPropogation(THETA,Y,A,NUMLAYERS,NUMSAMPLES,NUMVARS,REGPARAM)
 
 cost=[]
+print('\nTraining')
 for i in range(CYCLES):
     print(str(i)+"/"+str(CYCLES))
     forwardPropogation(X,NEURONS,THETA,NUMLAYERS,A)
@@ -193,44 +208,48 @@ for i in range(CYCLES):
     updateTheta(THETA,ALPHA,DER,NUMLAYERS)
     cost.append(calcC(THETA,A[-1],Y))
 
-print(cost[0],'->',cost[-1])
 #testing
-A = forwardPropogation(tx,NEURONS,THETA,prevA=A)
-A[-1] = A[-1].T
-ty = ty.T
-count =0
-for i in range(ty.shape[0]):
-    m = max(A[-1][i])
-    for j in range(ty.shape[1]):
-        if A[-1][i][j] == m:
-            A[-1][i][j] = 1
-        else:
-            A[-1][i][j] = 0
-for i in range(ty.shape[0]):
-    if np.array_equal(ty[i],A[-1][i]):
-        count+=1
-print("Testing accuracy: ",100*count/ty.shape[0])
+print('\nTesting...')
 
-#training(accuracy)
-A = forwardPropogation(X,NEURONS,THETA,prevA=A)
+A = forwardPropogation(X,NEURONS,THETA,prevA=None)
 A[-1] = A[-1].T
 Y = Y.T
-
-count =0
-for i in range(Y.shape[0]):
+count = 0
+for i in range(A[-1].shape[0]):
     m = max(A[-1][i])
-    for j in range(Y.shape[1]):
-        if A[-1][i][j] == m:
+    m -= 0.01
+    for j in range(A[-1].shape[1]):
+        if A[-1][i][j] >= m and m>=0.5:
             A[-1][i][j] = 1
         else:
-
             A[-1][i][j] = 0
-
-for i in range(Y.shape[0]):
     if np.array_equal(Y[i],A[-1][i]):
         count+=1
 
-print("Training accuracy: ",100*count/Y.shape[0])
+A = forwardPropogation(tx,NEURONS,THETA,prevA=None)
+count2 = 0
+A[-1] = A[-1].T
+ty = ty.T
+for i in range(A[-1].shape[0]):
+    m = max(A[-1][i])
+    m -= 0.01
+    for j in range(A[-1].shape[1]):
+        if A[-1][i][j] >= m and m>=0.5:
+            A[-1][i][j] = 1
+        else:
+            A[-1][i][j] = 0
+    if np.array_equal(A[-1][i],ty[i]):
+        count2+=1
 
-plt.plot(cost)
-plt.show()
+print('Done')
+
+print('\nSaving weights to shelve - weights')
+db['theta'] = THETA
+
+print('\nResults:')
+print('cost:',cost[0],'->',cost[-1])
+print("Testing accuracy: ",100*count2/(ty.shape[0]))
+print("Training accuracy: ",100*count/(Y.shape[0]))
+
+#plt.plot(cost)
+#plt.show()

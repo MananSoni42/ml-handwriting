@@ -12,8 +12,10 @@ for i in range(len(label)):
             new_label[i].append(1)
         else:
             new_label[i].append(0)
+    for j in range(26):
+        new_label[i].append(0)
 
-for i in range(1000):
+for i in range(10):
     for j in range(len(image[i])):
         print(image[i][j],end=' ')
     for j in range(len(new_label[i])):

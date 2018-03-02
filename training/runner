@@ -1,0 +1,14 @@
+#!/bin/bash
+
+beg="data_"
+ext=".txt"
+
+for i in {0..35}
+ do
+  file=""
+  file=$beg$i$ext
+  echo ""
+  echo "--------------- $file -----------------"
+  ./neuralNetwork.py $file 0.2 1000 0.75
+ done
+
