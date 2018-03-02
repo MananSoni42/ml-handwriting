@@ -3,7 +3,7 @@
 import shelve,os,sys,numpy
 
 if len(sys.argv) != 4:
-    print("Usage ./finalInterpretes.py inputImages sentenceStruct shelveFile")
+    print("Usage ./finalInterpreter.py inputImages sentenceStruct shelveFile")
     sys.exit()
 images = open(sys.argv[1],"r")
 sentenceStruct= open(sys.argv[2],"r")
@@ -62,6 +62,7 @@ try:
     THETA = db['theta']
 except:
     print("couldn't find theta in shelve")
+    sys.exit()
 
 NEURONS = []
 NEURONS.append(THETA[0].shape[1]-1)
@@ -72,18 +73,19 @@ print(NEURONS)
 A = forwardPropogation(X,NEURONS,THETA)
 
 A[-1] = A[-1].T
+print(A[-1])
 for i in range(A[-1].shape[0]):
     m = max(A[-1][i])
     m -= 0.01
     for j in range(A[-1].shape[1]):
         if A[-1][i][j] >= m and m>=0.5:
+            print(m)
             A[-1][i][j] = 1
         else:
             A[-1][i][j] = 0
 
 wordNum=0
 finalOut = []
-print(A[-1].shape)
 for i in range(len(lines)):
     finalOut.append([])
     for j in range(len(lines[i])):
@@ -91,9 +93,9 @@ for i in range(len(lines)):
             for k in range(36):
                 if(A[-1][wordNum][k]==1):
                     if k<10:
-                        finalOut[i].append(chr(k+48))
-                    else :
-                        finalOut[i].append(chr(k+ord('A')-1))
+                        finalOut[i].append(chr(k+ord('0')))
+                    else:
+                        finalOut[i].append(chr(k+ord('A')-10))
                     break
                 if k == 35:
                     finalOut[i].append('?')
@@ -104,4 +106,5 @@ for i in range(len(lines)):
         elif(lines[i][j]=='S'):
             finalOut[i].append(' ')
 print(finalOut)
+print(wordNum)
                     
