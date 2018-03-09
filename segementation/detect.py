@@ -16,20 +16,20 @@ def convTo28x28(img):
     #if image is big convert to small enough image
     factor = 1
     if width>height:
-        if width > 28:
-            factor = 28/width
+        if width > 24:
+            factor = 24/width
         newWidth = int(round(factor*width,0))
         newHeight = int(round(factor*height,0))
     elif height>=width:
-        if height > 28:
-            factor = 28/height
+        if height > 24:
+            factor = 24/height
         newWidth = int(round(factor*width,0))
         newHeight = int(round(factor*height,0))
 
     smallIm = img.resize((newWidth,newHeight))
 
     #find center wrt image
-    centerX = int(round(14 - (newWidth/2),0))
+    centerX = int(round(14 - (newWidth/2),0)+1)
     centerY = int(round(14 - (newHeight/2),0))
 
     #paste cropped image (28x) or (x28) on white 28x28 image at it's center
@@ -54,16 +54,16 @@ for i in range(im.size[0]):
 #create boundaries(black) in ver.jpg
 vbound = [0 for i in range(im.size[0])]
 for i in range(1,im.size[0]-1):
-    if (ver.getpixel((i-1,100))==(255,0,0) and ver.getpixel((i,100))==(255,0,0) and ver.getpixel((i+1,100))==(255,255,255)):
+    if (ver.getpixel((i-1,14))==(255,0,0) and ver.getpixel((i,14))==(255,0,0) and ver.getpixel((i+1,14))==(255,255,255)):
         vbound[i] = 1
-    if (ver.getpixel((i-1,100))==(255,255,255) and ver.getpixel((i,100))==(255,0,0) and ver.getpixel((i+1,100))==(255,0,0)):
+    if (ver.getpixel((i-1,14))==(255,255,255) and ver.getpixel((i,14))==(255,0,0) and ver.getpixel((i+1,14))==(255,0,0)):
         vbound[i] = 2
 #border cases
 #case 1 - touching left edge
-if ver.getpixel((0,100))==(255,0,0):
+if ver.getpixel((0,14))==(255,0,0):
     vbound[0]=2
 #case 2 - touching right edge
-if ver.getpixel((im.size[0]-1,100))==(255,0,0):
+if ver.getpixel((im.size[0]-1,14))==(255,0,0):
     vbound[im.size[0]-1]=1
 #make changes to ver
 for i in range(im.size[0]):
@@ -221,8 +221,21 @@ for i in range(len(start)):
     inp.append([])
     for j in range(28):
         for k in range(28):
-            inp[i].append(new.getpixel((j,k)))
-
+            if new.getpixel((k,j))>=255:
+                inp[i].append(255)
+            elif new.getpixel((k,j))<=0:
+                inp[i].append(0)
+            else:
+                inp[i].append(new.getpixel((k,j)))
+'''
+    for j in range(28):
+        for k in range(28):
+            if new.getpixel((k,j))>=1:
+                print(' ',end='')
+            else:
+                print('0',end='')
+        print('')
+'''
 
 #save for viewing and debugging
 name = 'final_' + sys.argv[1]

@@ -47,7 +47,7 @@ def forwardPropogation(X,neurons,theta,numLayers=None,prevA=None):
     return prevA
 
 
-lines = sentenceStruct.readlines()
+lines = sentenceStruct.readlines() #Entire text file is copied into lines as a list
 numImages = 0
 for i in range(len(lines)):
     for j in range(len(lines[i])):
@@ -56,8 +56,25 @@ for i in range(len(lines)):
 print(numImages)
 X = getImages(images,numImages,IMAGESIZE)
 X=X.T
-THETA = []
+'''
+X = X.T
+new=[]
 
+for i in range(X.shape[0]):
+    for j in range(X.shape[1]):
+        if j%28 !=0:
+            if X[i][j]>=150/255:
+                print(' ',end='')
+            else:
+                print('0',end='')
+        else:
+            if X[i][j]>=150/255:
+                print(' ')
+            else:
+                print('0')
+X=X.T
+'''
+THETA = []
 try:
     THETA = db['theta']
 except:
@@ -67,23 +84,20 @@ NEURONS = []
 NEURONS.append(THETA[0].shape[1]-1)
 for i in range(len(THETA)):
     NEURONS.append(THETA[i].shape[0])
-print(NEURONS)
-
 A = forwardPropogation(X,NEURONS,THETA)
-
 A[-1] = A[-1].T
 for i in range(A[-1].shape[0]):
     m = max(A[-1][i])
+    print(m)
     m -= 0.01
     for j in range(A[-1].shape[1]):
-        if A[-1][i][j] >= m and m>=0.5:
+        if A[-1][i][j] >= m:
             A[-1][i][j] = 1
         else:
             A[-1][i][j] = 0
 
 wordNum=0
 finalOut = []
-print(A[-1].shape)
 for i in range(len(lines)):
     finalOut.append([])
     for j in range(len(lines[i])):
@@ -93,7 +107,7 @@ for i in range(len(lines)):
                     if k<10:
                         finalOut[i].append(chr(k+48))
                     else :
-                        finalOut[i].append(chr(k+ord('A')-1))
+                        finalOut[i].append(chr(k-10+ord('A')))
                     break
                 if k == 35:
                     finalOut[i].append('?')
@@ -103,5 +117,5 @@ for i in range(len(lines)):
             continue
         elif(lines[i][j]=='S'):
             finalOut[i].append(' ')
+del finalOut[0][-1]            
 print(finalOut)
-                    
