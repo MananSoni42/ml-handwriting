@@ -206,8 +206,17 @@ def scanLine(i,out,num):
         inp.append([])
         for j in range(28):
             for k in range(28):
-                inp[i].append(new.getpixel((j,k)))
-
+                inp[i].append(new.getpixel((k,j)))
+        '''
+        for j in range(28):
+            for k in range(28):
+                if new.getpixel((k,j))>=150/255:
+                    print(' ',end='')
+                else:
+                    print('0',end='')
+            print('')
+        '''
+            
     #save for viewing and debugging
     name = 'final_' + str(num) + '_' + sys.argv[1]
     gray.save(name)
@@ -217,7 +226,6 @@ def scanLine(i,out,num):
         for j in range(len(inp[i])):
             out.write(str(inp[i][j])+' ')
         out.write('\n')
-
     return sentence
 
 ##-- MAIN --##
@@ -312,7 +320,6 @@ sentence = []
 for i in range(len(top)):
     nm = str(i) + '.jpg'
     sentence.append(scanLine(nm,out,i))
-
 
 #save sentence structure
 for i in range(len(sentence)):
