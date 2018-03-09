@@ -3,7 +3,7 @@
 import shelve,os,sys,numpy
 
 if len(sys.argv) != 4:
-    print("Usage ./finalInterpretes.py inputImages sentenceStruct shelveFile")
+    print("Usage ./finalInterpreter.py inputImages sentenceStruct shelveFile")
     sys.exit()
 images = open(sys.argv[1],"r")
 sentenceStruct= open(sys.argv[2],"r")
@@ -79,6 +79,7 @@ try:
     THETA = db['theta']
 except:
     print("couldn't find theta in shelve")
+    sys.exit()
 
 NEURONS = []
 NEURONS.append(THETA[0].shape[1]-1)
@@ -86,6 +87,7 @@ for i in range(len(THETA)):
     NEURONS.append(THETA[i].shape[0])
 A = forwardPropogation(X,NEURONS,THETA)
 A[-1] = A[-1].T
+print(A[-1])
 for i in range(A[-1].shape[0]):
     m = max(A[-1][i])
     print(m)
@@ -117,5 +119,5 @@ for i in range(len(lines)):
             continue
         elif(lines[i][j]=='S'):
             finalOut[i].append(' ')
-del finalOut[0][-1]            
+del finalOut[0][-1]
 print(finalOut)
