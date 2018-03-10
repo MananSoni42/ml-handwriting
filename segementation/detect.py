@@ -333,9 +333,9 @@ for i in range(len(top)):
 for i in range(len(sentence)):
     for j in range(len(sentence[i])):
         if sentence[i][j]==None:
-            out1.write('W ')
+            out1.write('W')
         if sentence[i][j]==' ':
-            out1.write('S ')
+            out1.write('S')
     out1.write('\n')
 
 out.close()
