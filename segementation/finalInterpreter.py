@@ -2,14 +2,14 @@
 
 import shelve,os,sys,numpy
 
-if len(sys.argv) != 4:
-    print("Usage ./finalInterpreter.py inputImages sentenceStruct shelveFile")
+if len(sys.argv) != 5:
+    print("Usage ./finalInterpreter.py inputImages sentenceStruct shelveFile shelveFile2")
     sys.exit()
 images = open(sys.argv[1],"r")
 sentenceStruct= open(sys.argv[2],"r")
 IMAGESIZE = 28*28
-db = shelve.open(str(sys.argv[3]))
-
+db = [shelve.open(str(sys.argv[3])),shelve.open(str(sys.argv[4]))]
+        
 def getImages(inFile,inpNum,inpSize):
     #extract data from txt file
     data =  []
@@ -56,6 +56,7 @@ for i in range(len(lines)):
 print(numImages)
 X = getImages(images,numImages,IMAGESIZE)
 X=X.T
+
 '''
 X = X.T
 new=[]
@@ -74,60 +75,66 @@ for i in range(X.shape[0]):
                 print('0')
 X=X.T
 '''
-THETA = []
+THETA1 = []
+THETA2 = []
 try:
-    THETA = db['theta']
+    THETA1 = db[0]['theta']
+    THETA2 = db[1]['theta']
 except:
     print("couldn't find theta in shelve")
     sys.exit()
 
-NEURONS = []
-NEURONS.append(THETA[0].shape[1]-1)
-for i in range(len(THETA)):
-    NEURONS.append(THETA[i].shape[0])
-A = forwardPropogation(X,NEURONS,THETA)
-A[-1] = A[-1].T
-#print(A[-1])
-for i in range(A[-1].shape[0]):
-    m = max(A[-1][i])
-    print(m)
-    m -= 0.01
-    for j in range(A[-1].shape[1]):
-        if A[-1][i][j] >= m:
-            A[-1][i][j] = 1
-        else:
-            A[-1][i][j] = 0
 
-wordNum=0
+NEURONS1 = [THETA1[0].shape[1]-1]
+NEURONS2 = [THETA2[0].shape[1]-1]
+
+for i in range(len(THETA1)):
+    NEURONS1.append(THETA1[i].shape[0])
+for i in range(len(THETA2)):
+    NEURONS2.append(THETA2[i].shape[0])
+
+A1 = forwardPropogation(X,NEURONS1,THETA1)
+A2 = forwardPropogation(X,NEURONS2,THETA2)
+
+A1[-1] = A1[-1].T
+A2[-1] = A2[-1].T
+
+#print(A[-1])
+m1=[]
+m2=[]
 finalOut = []
+for i in range(A1[-1].shape[0]):
+    m1=max(A1[-1][i])
+    m2=max(A2[-1][i])
+    m1 -= 0.01
+    m2 -= 0.01
+    if m1 > m2:
+        for j in range(A1[-1].shape[1]):
+            if A1[-1][i][j] >= m1:
+                A1[-1][i][j] = 1
+                finalOut.append(chr(j+ord('A')))
+            else:
+                A1[-1][i][j] = 0
+    else:
+        for j in range(A2[-1].shape[1]):
+            if A2[-1][i][j] >= m2:
+                A2[-1][i][j] = 1
+                finalOut.append(chr(j+ord('0')))
+            else:
+                A2[-1][i][j] = 0
+
 for i in range(len(lines)):
-    finalOut.append([])
+    lines[i]=list(lines[i])
+
+#print(finalOut)
+#print(lines)
+wordNum=0
+for i in range(len(lines)):
     for j in range(len(lines[i])):
         if(lines[i][j]=='W'):
-
-            for k in range(36):
-                if(A[-1][wordNum][k]==1):
-                    if k<10:
-                        finalOut[i].append(chr(k+48))
-                    else :
-                        finalOut[i].append(chr(k-10+ord('A')))
-                    break
-                if k == 35:
-                    finalOut[i].append('?')
-            wordNum +=1
-            '''
-            for k in range(26):
-                if(A[-1][wordNum][k]==1):
-                    finalOut[i].append(chr(k+ord('A')))
-                    break
-                if k == 35:
-                    finalOut[i].append('?')
-            wordNum +=1
-            '''
-        elif(lines[i][j]=='\n'):
-            finalOut[i].append('\n')
-            continue
+            lines[i][j]=finalOut[wordNum]
+            wordNum+=1
         elif(lines[i][j]=='S'):
-            finalOut[i].append(' ')
-del finalOut[0][-1]
-print(finalOut)
+            lines[i][j]=" "
+
+print(lines)
