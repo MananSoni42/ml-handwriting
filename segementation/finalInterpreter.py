@@ -87,7 +87,7 @@ for i in range(len(THETA)):
     NEURONS.append(THETA[i].shape[0])
 A = forwardPropogation(X,NEURONS,THETA)
 A[-1] = A[-1].T
-print(A[-1])
+#print(A[-1])
 for i in range(A[-1].shape[0]):
     m = max(A[-1][i])
     print(m)
@@ -104,6 +104,7 @@ for i in range(len(lines)):
     finalOut.append([])
     for j in range(len(lines[i])):
         if(lines[i][j]=='W'):
+
             for k in range(36):
                 if(A[-1][wordNum][k]==1):
                     if k<10:
@@ -114,6 +115,15 @@ for i in range(len(lines)):
                 if k == 35:
                     finalOut[i].append('?')
             wordNum +=1
+            '''
+            for k in range(26):
+                if(A[-1][wordNum][k]==1):
+                    finalOut[i].append(chr(k+ord('A')))
+                    break
+                if k == 35:
+                    finalOut[i].append('?')
+            wordNum +=1
+            '''
         elif(lines[i][j]=='\n'):
             finalOut[i].append('\n')
             continue

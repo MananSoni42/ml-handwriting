@@ -4,12 +4,11 @@ from PIL import Image
 import os
 
 #open all neccessary files
-if len(sys.argv)!=4:
-    print('Usage: ./detect.py imageName OutImageAsTxt OutSentenceStucture')
+if len(sys.argv)!=2:
+    print('Usage: ./detect.py imageName')
     sys.exit()
 im = Image.open(sys.argv[1])
-out = open(sys.argv[2],'w')
-sentenceOut = open(sys.argv[3],'w')
+
 def convTo28x28(img):
     width,height = img.size
     final = Image.new('L',(28,28),255)
@@ -54,16 +53,16 @@ def scanLine(i,out,num):
     #create boundaries(black) in ver.jpg
     vbound = [0 for i in range(im.size[0])]
     for i in range(1,im.size[0]-1):
-        if (ver.getpixel((i-1,100))==(255,0,0) and ver.getpixel((i,100))==(255,0,0) and ver.getpixel((i+1,100))==(255,255,255)):
+        if (ver.getpixel((i-1,14))==(255,0,0) and ver.getpixel((i,14))==(255,0,0) and ver.getpixel((i+1,14))==(255,255,255)):
             vbound[i] = 1
-        if (ver.getpixel((i-1,100))==(255,255,255) and ver.getpixel((i,100))==(255,0,0) and ver.getpixel((i+1,100))==(255,0,0)):
+        if (ver.getpixel((i-1,14))==(255,255,255) and ver.getpixel((i,14))==(255,0,0) and ver.getpixel((i+1,14))==(255,0,0)):
             vbound[i] = 2
     #border cases
     #case 1 - touching left edge
-    if ver.getpixel((0,100))==(255,0,0):
+    if ver.getpixel((0,14))==(255,0,0):
         vbound[0]=2
     #case 2 - touching right edge
-    if ver.getpixel((im.size[0]-1,100))==(255,0,0):
+    if ver.getpixel((im.size[0]-1,14))==(255,0,0):
         vbound[im.size[0]-1]=1
     #make changes to ver
     for i in range(im.size[0]):
@@ -225,8 +224,8 @@ def scanLine(i,out,num):
         '''
 
     #save for viewing and debugging
-    name = 'final_' + str(num) + '_' + sys.argv[1]
-    gray.save(name)
+    #name = 'final_' + str(num) + '_' + sys.argv[1]
+    #gray.save(name)
 
     #input file
     for i in range(len(inp)):
@@ -238,9 +237,6 @@ def scanLine(i,out,num):
 ##-- MAIN --##
 
 #open all neccessary files
-if len(sys.argv)!=4:
-    print('Usage: ./detect.py imageName inputFile sentenceFile')
-    sys.exit()
 im = Image.open(sys.argv[1])
 g = im.convert("L")
 hor = Image.new('RGB',im.size,(255,255,255))
@@ -262,17 +258,17 @@ for i in range(g.size[1]):
 #create boundaries(red) in hor.jpg
 hbound = [0 for i in range(im.size[1])]
 for i in range(1,im.size[1]-1):
-    if hor.getpixel((100,i-1))==(255,0,0) and hor.getpixel((100,i))==(255,0,0) and hor.getpixel((100,i+1))==(255,255,255):
+    if hor.getpixel((14,i-1))==(255,0,0) and hor.getpixel((14,i))==(255,0,0) and hor.getpixel((14,i+1))==(255,255,255):
         hbound[i] = 1
-    if hor.getpixel((100,i-1))==(255,255,255) and hor.getpixel((100,i))==(255,0,0) and hor.getpixel((100,i+1))==(255,0,0):
+    if hor.getpixel((14,i-1))==(255,255,255) and hor.getpixel((14,i))==(255,0,0) and hor.getpixel((14,i+1))==(255,0,0):
         hbound[i] = 2
 
 #border cases
 #case 1 - touching top edge
-if hor.getpixel((100,0))==(255,0,0):
+if hor.getpixel((14,0))==(255,0,0):
     hbound[0] = 2
 #case 2 - touching bottom edge
-if hor.getpixel((100,im.size[1]-1))==(255,0,0):
+if hor.getpixel((14,im.size[1]-1))==(255,0,0):
     hbound[im.size[1]-1] = 1
 
 #make changes to hor
@@ -304,6 +300,7 @@ if len(top)!=len(bottom):
 
 numLines = len(top)
 
+'''
 #add a directory with name of image and change to it
 name = sys.argv[1].rstrip('.jpg') + '_temp'
 path = os.getcwd()
@@ -311,10 +308,11 @@ newPath = path + '/' + name
 if not os.path.exists(newPath):
     os.makedirs(newPath)
 os.chdir(newPath)
+'''
 
 #open files to write text
-out = open(sys.argv[2],'a')
-out1 = open(sys.argv[3],'a')
+out = open(sys.argv[1].rstrip('.jpg')+'_t.txt','a')
+out1 = open(sys.argv[1].rstrip('.jpg')+'_s.txt','a')
 
 #store final images
 for i in range(len(top)):
@@ -328,6 +326,9 @@ for i in range(len(top)):
     nm = str(i) + '.jpg'
     sentence.append(scanLine(nm,out,i))
 
+for i in range(len(top)):
+    os.remove(str(i)+'.jpg')
+
 #save sentence structure
 for i in range(len(sentence)):
     for j in range(len(sentence[i])):
@@ -339,5 +340,6 @@ for i in range(len(sentence)):
 
 out.close()
 out1.close()
-g.save('gray.jpg')
-hor.save("hor.jpg")
+
+#g.save('gray.jpg')
+#hor.save("hor.jpg")
