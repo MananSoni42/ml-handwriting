@@ -1,0 +1,18 @@
+#!/bin/bash
+
+a=$(locate -b $1)
+
+if [a=""]; then	
+ echo "File not found"
+ exit 1
+fi
+
+cp $a ~/handRec/img.jpg
+
+chmod +x detect.py finalInterpreter.py
+
+./detect img.jpg
+./finalInterpreter.py img_t.txt img_s.txt weights
+
+rm img*
+

@@ -1,0 +1,8 @@
+#!/bin/bash
+
+pip install numpy
+pip install Pillow
+
+cp -r ./handRec ~
+
+cd ~/handRec
