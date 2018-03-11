@@ -9,7 +9,7 @@ images = open(sys.argv[1],"r")
 sentenceStruct= open(sys.argv[2],"r")
 IMAGESIZE = 28*28
 db = shelve.open(str(sys.argv[3]))
-        
+
 def getImages(inFile,inpNum,inpSize):
     #extract data from txt file
     data =  []
@@ -86,7 +86,7 @@ except:
 NEURONS = [THETA[0].shape[1]-1]
 for i in range(len(THETA)):
     NEURONS.append(THETA[i].shape[0])
-                 
+
 A = forwardPropogation(X,NEURONS,THETA)
 
 A[-1] = A[-1].T
@@ -96,7 +96,7 @@ m=0
 finalOut = []
 for i in range(A[-1].shape[0]):
     m=max(A[-1][i])
-    m -= 0.01
+    m -= 2**(-5)
     for j in range(A[-1].shape[1]):
         if A[-1][i][j] >= m:
             A[-1][i][j] = 1
@@ -104,9 +104,10 @@ for i in range(A[-1].shape[0]):
                 finalOut.append(chr(j+ord('0')))
             else:
                 finalOut.append(chr(j-10+ord('A')))
+            break
         else:
             A[-1][i][j] = 0
-  
+
 for i in range(len(lines)):
     lines[i]=list(lines[i])
 
