@@ -311,8 +311,8 @@ os.chdir(newPath)
 '''
 
 #open files to write text
-out = open(sys.argv[1].rstrip('.jpg')+'_t.txt','a')
-out1 = open(sys.argv[1].rstrip('.jpg')+'_s.txt','a')
+out = open('t.txt','a')
+out1 = open('s.txt','a')
 
 #store final images
 for i in range(len(top)):
