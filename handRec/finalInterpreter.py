@@ -54,7 +54,7 @@ for i in range(len(lines)):
     for j in range(len(lines[i])):
         if(lines[i][j]=='W'):
             numImages+=1
-print(numImages)
+#print(numImages)
 X = getImages(images,numImages,IMAGESIZE)
 X=X.T
 
@@ -137,4 +137,9 @@ for i in range(len(lines)):
         elif(lines[i][j]=='S'):
             lines[i][j]=" "
 
-print(lines)
+for i in range(len(lines)):
+    for j in range(len(lines[i])):
+        if lines[i][j]==' ':
+            print(' ',end='')
+        elif lines[i][j]!=['\n']:
+            print(lines[i][j],end='')
