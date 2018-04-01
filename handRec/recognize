@@ -4,7 +4,9 @@ cd ~/handRec
 
 chmod +x detect.py finalInterpreter.py
 
-./detect.py $1
-./finalInterpreter.py t.txt s.txt weights
+cp $1 ./img.jpg
 
-rm t.txt s.txt
+./detect.py $1
+./finalInterpreter.py t.txt s.txt
+
+rm t.txt s.txt img.jpg
