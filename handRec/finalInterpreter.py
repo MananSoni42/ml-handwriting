@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import shelve,os,sys,numpy
+import pickle,os,sys,numpy
 
 if len(sys.argv) != 3:
     print("Usage ./finalInterpreter.py inputImages sentenceStruct")
@@ -8,9 +8,6 @@ if len(sys.argv) != 3:
 images = open(sys.argv[1],"r")
 sentenceStruct= open(sys.argv[2],"r")
 IMAGESIZE = 28*28
-db = shelve.open("weights")
-db2= shelve.open("weights1")
-db3= shelve.open("weights2")
 def getImages(inFile,inpNum,inpSize):
     #extract data from txt file
     data =  []
@@ -76,15 +73,16 @@ for i in range(X.shape[0]):
                 print('0')
 X=X.T
 '''
-THETA = []
+
 try:
-    THETA = db['theta']
-    print("SUCCESS")
-    THETA2 = db2['theta']
-    print("SUCCESS")
-    THETA3 = db3['theta']
+    with open('pickledW1','rb') as f:
+        THETA=pickle.load(f)
+    with open('pickledW2','rb') as f:
+        THETA2=pickle.load(f)
+    with open('pickledW3','rb') as f:
+        THETA3=pickle.load(f)
 except:
-    print("couldn't find theta in shelve")
+    print("ERROR in reading the pickled files")
     sys.exit()
 
 
