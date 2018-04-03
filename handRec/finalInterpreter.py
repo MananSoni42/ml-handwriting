@@ -99,7 +99,7 @@ A = forwardPropogation(X,NEURONS,THETA)
 A2 = forwardPropogation(X,NEURONS2,THETA2)
 A3 = forwardPropogation(X,NEURONS3,THETA3)
 
-matFinal = numpy.concatenate((A[-1]*0.8,A2[-1]*0.90,A3[-1]),axis=0)
+matFinal = numpy.concatenate((A[-1],A2[-1],A3[-1]),axis=0)
 matFinal = matFinal.T
 
 print(matFinal)
