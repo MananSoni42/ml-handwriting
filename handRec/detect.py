@@ -52,17 +52,18 @@ def scanLine(i,out,num):
 
     #create boundaries(black) in ver.jpg
     vbound = [0 for i in range(im.size[0])]
+    mid = ver.size[1]/2
     for i in range(1,im.size[0]-1):
-        if (ver.getpixel((i-1,14))==(255,0,0) and ver.getpixel((i,14))==(255,0,0) and ver.getpixel((i+1,14))==(255,255,255)):
+        if (ver.getpixel((i-1,mid))==(255,0,0) and ver.getpixel((i,mid))==(255,0,0) and ver.getpixel((i+1,mid))==(255,255,255)):
             vbound[i] = 1
-        if (ver.getpixel((i-1,14))==(255,255,255) and ver.getpixel((i,14))==(255,0,0) and ver.getpixel((i+1,14))==(255,0,0)):
+        if (ver.getpixel((i-1,mid))==(255,255,255) and ver.getpixel((i,mid))==(255,0,0) and ver.getpixel((i+1,mid))==(255,0,0)):
             vbound[i] = 2
     #border cases
     #case 1 - touching left edge
-    if ver.getpixel((0,14))==(255,0,0):
+    if ver.getpixel((0,mid))==(255,0,0):
         vbound[0]=2
     #case 2 - touching right edge
-    if ver.getpixel((im.size[0]-1,14))==(255,0,0):
+    if ver.getpixel((im.size[0]-1,mid))==(255,0,0):
         vbound[im.size[0]-1]=1
     #make changes to ver
     for i in range(im.size[0]):
@@ -257,18 +258,19 @@ for i in range(g.size[1]):
 
 #create boundaries(red) in hor.jpg
 hbound = [0 for i in range(im.size[1])]
+mid = hor.size[0]/2
 for i in range(1,im.size[1]-1):
-    if hor.getpixel((14,i-1))==(255,0,0) and hor.getpixel((14,i))==(255,0,0) and hor.getpixel((14,i+1))==(255,255,255):
+    if hor.getpixel((mid,i-1))==(255,0,0) and hor.getpixel((mid,i))==(255,0,0) and hor.getpixel((mid,i+1))==(255,255,255):
         hbound[i] = 1
-    if hor.getpixel((14,i-1))==(255,255,255) and hor.getpixel((14,i))==(255,0,0) and hor.getpixel((14,i+1))==(255,0,0):
+    if hor.getpixel((mid,i-1))==(255,255,255) and hor.getpixel((mid,i))==(255,0,0) and hor.getpixel((mid,i+1))==(255,0,0):
         hbound[i] = 2
 
 #border cases
 #case 1 - touching top edge
-if hor.getpixel((14,0))==(255,0,0):
+if hor.getpixel((mid,0))==(255,0,0):
     hbound[0] = 2
 #case 2 - touching bottom edge
-if hor.getpixel((14,im.size[1]-1))==(255,0,0):
+if hor.getpixel((mid,im.size[1]-1))==(255,0,0):
     hbound[im.size[1]-1] = 1
 
 #make changes to hor
