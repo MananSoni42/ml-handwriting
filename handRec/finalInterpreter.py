@@ -102,7 +102,7 @@ A3 = forwardPropogation(X,NEURONS3,THETA3)
 matFinal = numpy.concatenate((A[-1],A2[-1],A3[-1]),axis=0)
 matFinal = matFinal.T
 
-print(matFinal)
+#print(matFinal)
 m=0
 finalOut = []
 for i in range(matFinal.shape[0]):
